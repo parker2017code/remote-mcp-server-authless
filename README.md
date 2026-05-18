@@ -1,51 +1,70 @@
-# Building a Remote MCP Server on Cloudflare (Without Auth)
+# Kaspa Explained MCP
 
-This example allows you to deploy a remote MCP server that doesn't require authentication on Cloudflare Workers.
+This Cloudflare Worker exposes a public, read-only MCP endpoint for Kaspa Explained.
 
-## Get started:
+Endpoint:
 
-[![Deploy to Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-authless)
+```text
+https://remote-mcp-server-authless.<your-account>.workers.dev/mcp
+```
 
-This will deploy your MCP server to a URL like: `remote-mcp-server-authless.<your-account>.workers.dev/mcp`
+If a custom domain is added later, the intended endpoint is:
 
-Alternatively, you can use the command line below to get the remote MCP Server created on your local machine:
+```text
+https://mcp.kaspaexplained.com/mcp
+```
+
+## What It Does
+
+The Worker fetches the public Kaspa Explained agent index:
+
+```text
+https://kaspaexplained.com/agent-index.json
+```
+
+It then exposes MCP tools for agents:
+
+- `get_kaspa_explained_index` - return index metadata, scope, and guidance.
+- `search_kaspa_explained` - search public Kaspa Explained pages and reference files.
+- `read_kaspa_explained` - read one public page or reference file by path or URL.
+- `check_kaspa_claim` - retrieve claim-checking context and cited passages.
+- `get_kaspa_status_context` - return compact status context for Toccata, smart contracts, and claims.
+
+## Design
+
+This server is deliberately simple and cheap:
+
+- No embeddings.
+- No vector database.
+- No server-side LLM answering.
+- No wallet, account, private-data, or write tools.
+
+The calling AI agent supplies the model. This MCP server only retrieves public, source-labeled Kaspa Explained content and reminds agents to keep mainnet, ecosystem-live, testnet, targeted, roadmap, research, and unsupported claims separate.
+
+Auth is not required while the tools are public and read-only. Add authentication before exposing private sources or write-capable tools.
+
+## Development
+
+Install dependencies:
 
 ```bash
-npm create cloudflare@latest -- my-mcp-server --template=cloudflare/ai/demos/remote-mcp-authless
+npm install
 ```
 
-## Customizing your MCP Server
+Run locally:
 
-To add your own [tools](https://developers.cloudflare.com/agents/model-context-protocol/tools/) to the MCP server, define each tool inside the `init()` method of `src/index.ts` using `this.server.tool(...)`.
-
-## Connect to Cloudflare AI Playground
-
-You can connect to your MCP server from the Cloudflare AI Playground, which is a remote MCP client:
-
-1. Go to https://playground.ai.cloudflare.com/
-2. Enter your deployed MCP server URL (`remote-mcp-server-authless.<your-account>.workers.dev/mcp`)
-3. You can now use your MCP tools directly from the playground!
-
-## Connect Claude Desktop to your MCP server
-
-You can also connect to your remote MCP server from local MCP clients, by using the [mcp-remote proxy](https://www.npmjs.com/package/mcp-remote).
-
-To connect to your MCP server from Claude Desktop, follow [Anthropic's Quickstart](https://modelcontextprotocol.io/quickstart/user) and within Claude Desktop go to Settings > Developer > Edit Config.
-
-Update with this configuration:
-
-```json
-{
-	"mcpServers": {
-		"calculator": {
-			"command": "npx",
-			"args": [
-				"mcp-remote",
-				"http://localhost:8787/mcp" // or remote-mcp-server-authless.your-account.workers.dev/mcp
-			]
-		}
-	}
-}
+```bash
+npm run dev
 ```
 
-Restart Claude and you should see the tools become available.
+Type-check:
+
+```bash
+npm run type-check
+```
+
+Deploy:
+
+```bash
+npm run deploy
+```
