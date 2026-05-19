@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"kaspa-explained": {
+			"type": "http",
+			"url": "https://mcp.kaspaexplained.com/mcp"
+		}
+	}
+}
