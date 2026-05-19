@@ -2,23 +2,33 @@
 
 This Cloudflare Worker exposes a public, read-only MCP endpoint for Kaspa Explained.
 
-Planned public endpoint:
+## Agent Access
+
+Agents and MCP clients should use this remote HTTP MCP URL:
 
 ```text
-https://mcp.kaspaexplained.com/mcp
+https://remote-mcp-server-authless.parker2017.workers.dev/mcp
+```
+
+Check health here:
+
+```text
+https://remote-mcp-server-authless.parker2017.workers.dev/health
+```
+
+Do not use `https://mcp.kaspaexplained.com/mcp`; the custom domain is not part of the current setup.
+
+Public endpoint:
+
+```text
+https://remote-mcp-server-authless.parker2017.workers.dev/mcp
 ```
 
 Health check:
 
 ```text
-https://mcp.kaspaexplained.com/
-https://mcp.kaspaexplained.com/health
-```
-
-The Worker also keeps `workers.dev` enabled, so Cloudflare may provide a fallback endpoint in this form after deployment:
-
-```text
-https://remote-mcp-server-authless.<your-account-subdomain>.workers.dev/mcp
+https://remote-mcp-server-authless.parker2017.workers.dev/
+https://remote-mcp-server-authless.parker2017.workers.dev/health
 ```
 
 ## What It Does
@@ -59,7 +69,7 @@ Use the remote HTTP endpoint in MCP clients that support hosted MCP servers:
 	"mcpServers": {
 		"kaspa-explained": {
 			"type": "http",
-			"url": "https://mcp.kaspaexplained.com/mcp"
+			"url": "https://remote-mcp-server-authless.parker2017.workers.dev/mcp"
 		}
 	}
 }
@@ -73,10 +83,12 @@ Example files are in `examples/`:
 After deployment, verify the access point before adding it to clients:
 
 ```bash
-curl https://mcp.kaspaexplained.com/health
+curl https://remote-mcp-server-authless.parker2017.workers.dev/health
 ```
 
 The response should include `status: "ok"` and list the available tool names.
+
+If a browser or plain GET request to `/mcp` returns `Not Acceptable: Client must accept text/event-stream`, the Worker is reachable. MCP clients must connect using the remote HTTP MCP protocol and include `Accept: application/json, text/event-stream`.
 
 ## Development
 
@@ -104,21 +116,4 @@ Deploy:
 npm run deploy
 ```
 
-The deployment config attaches `mcp.kaspaexplained.com` as a Cloudflare Workers custom domain through `wrangler.jsonc`:
-
-```jsonc
-"routes": [
-	{
-		"pattern": "mcp.kaspaexplained.com",
-		"custom_domain": true
-	}
-]
-```
-
 If deploying from a non-interactive environment, set `CLOUDFLARE_API_TOKEN` first.
-
-Cloudflare custom-domain requirements:
-
-- The zone for `kaspaexplained.com` must be active in the Cloudflare account used for deployment.
-- `mcp.kaspaexplained.com` must not already have a conflicting CNAME record.
-- Custom Domains match the exact hostname, so `mcp.kaspaexplained.com` is separate from `www.mcp.kaspaexplained.com`.

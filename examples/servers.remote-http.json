@@ -2,7 +2,7 @@
 	"servers": {
 		"kaspa-explained": {
 			"type": "http",
-			"url": "https://mcp.kaspaexplained.com/mcp"
+			"url": "https://remote-mcp-server-authless.parker2017.workers.dev/mcp"
 		}
 	}
 }

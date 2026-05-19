@@ -1,6 +1,10 @@
 # Client Examples
 
-Use these examples only after the Worker is deployed and `https://mcp.kaspaexplained.com/health` returns `status: "ok"`.
+Use these examples after the Worker health endpoint returns `status: "ok"`:
+
+```text
+https://remote-mcp-server-authless.parker2017.workers.dev/health
+```
 
 Different MCP hosts use different top-level keys:
 
@@ -10,5 +14,7 @@ Different MCP hosts use different top-level keys:
 Both point to the same remote HTTP MCP endpoint:
 
 ```text
-https://mcp.kaspaexplained.com/mcp
+https://remote-mcp-server-authless.parker2017.workers.dev/mcp
 ```
+
+A plain browser request to `/mcp` may return `Not Acceptable: Client must accept text/event-stream`. That is expected for a non-MCP request.
