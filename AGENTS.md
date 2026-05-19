@@ -12,6 +12,19 @@ Use this health URL to verify the Worker is live:
 https://remote-mcp-server-authless.parker2017.workers.dev/health
 ```
 
+Use this discovery card when an agent wants to discover the MCP endpoint before connecting:
+
+```text
+https://remote-mcp-server-authless.parker2017.workers.dev/.well-known/mcp.json
+```
+
+The Worker also serves the same card at:
+
+```text
+https://remote-mcp-server-authless.parker2017.workers.dev/.well-known/mcp-server-card
+https://remote-mcp-server-authless.parker2017.workers.dev/.well-known/mcp/server-card.json
+```
+
 Do not use `https://mcp.kaspaexplained.com/mcp`. The custom domain is not part of the current setup.
 
 If a browser or plain GET request to `/mcp` returns this error, the Worker can still be healthy:

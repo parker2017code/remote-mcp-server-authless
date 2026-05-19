@@ -6,6 +6,12 @@ Use these examples after the Worker health endpoint returns `status: "ok"`:
 https://remote-mcp-server-authless.parker2017.workers.dev/health
 ```
 
+Agents can discover the endpoint from:
+
+```text
+https://remote-mcp-server-authless.parker2017.workers.dev/.well-known/mcp.json
+```
+
 Different MCP hosts use different top-level keys:
 
 - `mcp-servers.remote-http.json` uses the common `mcpServers` shape.

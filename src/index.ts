@@ -5,6 +5,19 @@ import { z } from "zod";
 const INDEX_URL = "https://kaspaexplained.com/agent-index.json";
 const CACHE_MS = 5 * 60 * 1000;
 const MAX_TEXT_CHARS = 12_000;
+const SERVER_VERSION = "2026-05-19";
+const WELL_KNOWN_PATHS = new Set([
+	"/.well-known/mcp.json",
+	"/.well-known/mcp-server-card",
+	"/.well-known/mcp/server-card.json",
+]);
+const TOOL_NAMES = [
+	"get_kaspa_explained_index",
+	"search_kaspa_explained",
+	"read_kaspa_explained",
+	"check_kaspa_claim",
+	"get_kaspa_status_context",
+];
 
 type AgentIndex = {
 	name: string;
@@ -200,10 +213,51 @@ function sourceGuidance() {
 	];
 }
 
+function discoveryHeaders(): HeadersInit {
+	return {
+		"Access-Control-Allow-Origin": "*",
+		"Access-Control-Allow-Methods": "GET, OPTIONS",
+		"Access-Control-Allow-Headers": "Content-Type, Accept",
+		"Cache-Control": "public, max-age=3600",
+		"Content-Type": "application/json; charset=utf-8",
+	};
+}
+
+function serverCard(origin: string) {
+	const endpoint = `${origin}/mcp`;
+	const health = `${origin}/health`;
+	return {
+		$schema: "https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json",
+		name: "com.kaspaexplained/mcp",
+		version: SERVER_VERSION,
+		title: "Kaspa Explained MCP",
+		description: "Public, read-only remote MCP server for discovering and reading Kaspa Explained pages, reference files, and claim-checking context.",
+		websiteUrl: "https://kaspaexplained.com/",
+		repository: {
+			url: "https://github.com/parker2017code/remote-mcp-server-authless",
+			source: "github",
+		},
+		remotes: [
+			{
+				type: "streamable-http",
+				url: endpoint,
+				supportedProtocolVersions: ["2025-06-18"],
+			},
+		],
+		_meta: {
+			healthUrl: health,
+			indexUrl: INDEX_URL,
+			acceptedContentTypes: ["application/json", "text/event-stream"],
+			toolNames: TOOL_NAMES,
+			note: "Connect with a remote HTTP MCP client. A browser GET to /mcp may return Not Acceptable because MCP clients must accept text/event-stream.",
+		},
+	};
+}
+
 export class MyMCP extends McpAgent {
 	server = new McpServer({
 		name: "Kaspa Explained",
-		version: "2026-05-18",
+		version: SERVER_VERSION,
 	});
 
 	async init() {
@@ -353,6 +407,14 @@ export default {
 	fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
 
+		if (request.method === "OPTIONS" && WELL_KNOWN_PATHS.has(url.pathname)) {
+			return new Response(null, { status: 204, headers: discoveryHeaders() });
+		}
+
+		if (request.method === "GET" && WELL_KNOWN_PATHS.has(url.pathname)) {
+			return Response.json(serverCard(url.origin), { headers: discoveryHeaders() });
+		}
+
 		if (url.pathname === "/mcp") {
 			return MyMCP.serve("/mcp").fetch(request, env, ctx);
 		}
@@ -363,13 +425,8 @@ export default {
 				status: "ok",
 				endpoint: `${url.origin}/mcp`,
 				index: INDEX_URL,
-				tools: [
-					"get_kaspa_explained_index",
-					"search_kaspa_explained",
-					"read_kaspa_explained",
-					"check_kaspa_claim",
-					"get_kaspa_status_context",
-				],
+				discovery: `${url.origin}/.well-known/mcp.json`,
+				tools: TOOL_NAMES,
 			});
 		}
 

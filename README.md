@@ -16,6 +16,12 @@ Check health here:
 https://remote-mcp-server-authless.parker2017.workers.dev/health
 ```
 
+Discovery card:
+
+```text
+https://remote-mcp-server-authless.parker2017.workers.dev/.well-known/mcp.json
+```
+
 Do not use `https://mcp.kaspaexplained.com/mcp`; the custom domain is not part of the current setup.
 
 Public endpoint:
@@ -29,6 +35,14 @@ Health check:
 ```text
 https://remote-mcp-server-authless.parker2017.workers.dev/
 https://remote-mcp-server-authless.parker2017.workers.dev/health
+```
+
+Discovery aliases:
+
+```text
+https://remote-mcp-server-authless.parker2017.workers.dev/.well-known/mcp.json
+https://remote-mcp-server-authless.parker2017.workers.dev/.well-known/mcp-server-card
+https://remote-mcp-server-authless.parker2017.workers.dev/.well-known/mcp/server-card.json
 ```
 
 ## What It Does
@@ -89,6 +103,8 @@ curl https://remote-mcp-server-authless.parker2017.workers.dev/health
 The response should include `status: "ok"` and list the available tool names.
 
 If a browser or plain GET request to `/mcp` returns `Not Acceptable: Client must accept text/event-stream`, the Worker is reachable. MCP clients must connect using the remote HTTP MCP protocol and include `Accept: application/json, text/event-stream`.
+
+The `.well-known` discovery URLs are public JSON documents for agents and registries. They advertise where to connect, but clients should still call MCP `initialize` and runtime list methods such as `tools/list` after connecting.
 
 ## Development
 
